@@ -1,26 +1,50 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
+import { useUser } from '../../lib/UserContext';
+import { setRegistered } from '@/redux/slices/authSlice';
+import { useDispatch } from 'react-redux';
 
 export default function Register() {
   const router = useRouter();
+  const { setUser } = useUser();
+  const dispatch = useDispatch();
 
-  // Состояния для хранения значений полей формы
   const [firstname, setName] = useState('');
   const [lastname, setSurname] = useState('');
   const [group, setGroup] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Функция для обработки регистрации
   const handleRegister = () => {
-    if (!firstname || !lastname || !group || !password) {
+    if (!firstname || !lastname || !group || !password || !email) {
       Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
       return;
     }
-    
-    console.log('Зарегистрирован:', { firstname, lastname, group, password });
-    
-    // После успешной регистрации можно перенаправить на главный экран
+
+    dispatch(setRegistered(true));
+
+    setUser({
+      firstName: firstname,
+      lastName: lastname,
+      avatar: null,
+    });
+
+    console.log('Зарегистрирован:', { firstname, lastname, group, email, password });
+
     router.replace('/home');
   };
 
@@ -29,56 +53,76 @@ export default function Register() {
       source={require('../../assets/images/background.jpg')}
       style={styles.container}
     >
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Регистрация</Text>
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Имя"
-          value={firstname}
-          onChangeText={setName}
-          autoCapitalize="words"
-          placeholderTextColor={"#999"}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Фамилия"
-          value={lastname}
-          onChangeText={setSurname}
-          autoCapitalize="words"
-          placeholderTextColor={"#999"}
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Группа, например БПИ-22-РП-1"
-          value={group}
-          onChangeText={setGroup}
-          placeholderTextColor={"#999"}
-          autoCapitalize='characters'
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Пароль"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          placeholderTextColor={"#999"}
-        />
-
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Зарегистрироваться</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.switchButton}
-          onPress={() => router.replace('../auth/login')}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
         >
-          <Text style={styles.switchButtonText}>Есть аккаунт? Войти</Text>
-        </TouchableOpacity>
-      </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <View style={styles.formContainer}>
+              <Text style={styles.title}>Регистрация</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Имя"
+                value={firstname}
+                onChangeText={setName}
+                autoCapitalize="words"
+                placeholderTextColor="#999"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Фамилия"
+                value={lastname}
+                onChangeText={setSurname}
+                autoCapitalize="words"
+                placeholderTextColor="#999"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Группа, например БПИ-22-РП-1"
+                value={group}
+                onChangeText={setGroup}
+                placeholderTextColor="#999"
+                autoCapitalize="characters"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="E-mail"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor="#999"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Пароль"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                placeholderTextColor="#999"
+              />
+
+              <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <Text style={styles.buttonText}>Зарегистрироваться</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.switchButton}
+                onPress={() => router.replace('../auth/login')}
+              >
+                <Text style={styles.switchButtonText}>Есть аккаунт? Войти</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </ImageBackground>
   );
 }
@@ -86,6 +130,9 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -93,7 +140,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 350,
     padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0)', // полупрозрачный фон для лучшего контраста
+    backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -116,7 +163,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     backgroundColor: '#fff',
     fontSize: 16,
-    color: '#333'
+    color: '#333',
   },
   button: {
     backgroundColor: '#3D76F7',
@@ -139,6 +186,6 @@ const styles = StyleSheet.create({
     color: '#3D76F7',
     fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center'
+    textAlign: 'center',
   },
 });

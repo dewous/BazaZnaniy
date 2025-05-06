@@ -1,86 +1,46 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+// loading.tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
-const StartPage: React.FC = () => {
+const LoadingScreen: React.FC = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  return (
-    <View style={styles.container}>
-      <Image source={require('../assets/images/goose.png')} style={styles.image} />
-      <Text style={styles.title}>База знаний</Text>
-      <Text style={styles.description}>
-        Этот производительный инструмент, разработанный для того, чтобы помочь вам лучше и удобнее управлять своими задачами в рамках учебы
-      </Text>
+  useEffect(() => {
+    // Имитация задержки загрузки (например, запросы на сервер)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      router.push('/startpage'); // После завершения загрузки редиректим на главную страницу
+    }, 2000);
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push('/auth/login')}
-      >
-        <Text style={styles.buttonText}>Войти</Text>
-      </TouchableOpacity>
+    return () => clearTimeout(timer);
+  }, [router]);
 
-      <TouchableOpacity 
-        style={styles.switchButton} 
-        onPress={() => router.push('/auth/register')}
-      >
-        <Text style={styles.switchButtonText}>Нет аккаунта? Зарегистрироваться</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#3D76F7" />
+        <Text style={styles.loadingText}>Загрузка...</Text>
+      </View>
+    );
+  }
+
+  return null; // Ничего не рендерим, если загрузка завершена
 };
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: '#3D76F7',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    marginVertical: 10,
-    borderRadius: 16,
-    width: '100%',
-    maxWidth: 320,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  switchButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginVertical: 15,
-  },
-  switchButtonText: {
-    fontSize: 16,
-    color: '#3D76F7',
-    fontWeight: '600',
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    backgroundColor: '#fff',
   },
-  image: {
-    width: 300,
-    height: 300,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  description: {
+  loadingText: {
+    marginTop: 10,
     fontSize: 16,
-    textAlign: 'center',
     color: '#333',
-    marginBottom: 24,
-    lineHeight: 22,
   },
 });
 
-export default StartPage;
+export default LoadingScreen;
