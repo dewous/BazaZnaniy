@@ -11,6 +11,7 @@ const StartPage: React.FC = () => {
   // Редирект, если пользователь авторизован
   useEffect(() => {
     if (isAuth) {
+      console.log("user authorized")
       router.push('/home');
     }
   }, [isAuth, router]);

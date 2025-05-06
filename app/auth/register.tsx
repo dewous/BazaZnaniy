@@ -17,6 +17,18 @@ import {
 import { useUser } from '../../lib/UserContext';
 import { setRegistered } from '@/redux/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import axios from 'axios';
+
+
+
+interface User {
+  firstname: string;
+  lastname: string;
+  group: string;
+  email: string;
+  password: string;
+  role: string;
+}
 
 export default function Register() {
   const router = useRouter();
@@ -29,24 +41,42 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!firstname || !lastname || !group || !password || !email) {
       Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
       return;
     }
-
-    dispatch(setRegistered(true));
-
-    setUser({
-      firstName: firstname,
-      lastName: lastname,
-      avatar: null,
-    });
-
-    console.log('Зарегистрирован:', { firstname, lastname, group, email, password });
-
-    router.replace('/home');
+  
+    try {
+      console.log('Запрос ушел на сервер');
+      const response = await axios.post('http://baze36.ru:3000/auth/register/', {
+        first_name : firstname,
+        last_name: lastname,
+        group_name: group,
+        email,
+        password,
+        role: 'STUDENT', // роль юзера
+      });
+  
+      if (response.status === 201 || response.status === 200) {
+        dispatch(setRegistered(true));
+        setUser({
+          firstName: firstname,
+          lastName: lastname,
+          avatar: null,
+        });
+        console.log('Успешная регистрация:', response.data);
+        router.replace('/home');
+      } else {
+        Alert.alert('Ошибка', 'Что-то пошло не так. Попробуйте снова.');
+        console.log('Ошибка:', response.status, response.data);
+      }
+    } catch (error: any) {
+      console.error('Ошибка регистрации:', error.response?.data || error.message);
+      Alert.alert('Ошибка регистрации', error.response?.data?.detail || 'Произошла ошибка при регистрации.');
+    }
   };
+  
 
   return (
     <ImageBackground
