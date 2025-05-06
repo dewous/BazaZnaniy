@@ -7,7 +7,7 @@ export default function Login() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Login screen</Text>
-      <Button title="Войти" onPress={() => router.replace('/')} />
+      <Button title="Войти" onPress={() => router.replace('/home')} />
     </View>
   );
 }

@@ -69,6 +69,7 @@ export default function ProfileScreen() {
             placeholder="Имя"
             value={firstName}
             onChangeText={setFirstName}
+            placeholderTextColor={"#999"}
           />
         </View>
 
@@ -79,6 +80,7 @@ export default function ProfileScreen() {
             placeholder="Фамилия"
             value={lastName}
             onChangeText={setLastName}
+            placeholderTextColor={"#999"}
           />
         </View>
 
@@ -89,6 +91,7 @@ export default function ProfileScreen() {
             placeholder="Группа"
             value={group}
             onChangeText={setGroup}
+            placeholderTextColor={"#999"}
           />
         </View>
 
@@ -101,6 +104,7 @@ export default function ProfileScreen() {
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
+              placeholderTextColor={"#999"}
             />
             <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
               <Ionicons

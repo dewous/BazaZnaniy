@@ -1,34 +1,32 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+
 const StartPage: React.FC = () => {
   const router = useRouter();
 
   return (
-      <View style={styles.container}>
-        <Image
-          source={require('../assets/images/goose.png')}
-          style={styles.image}
-        />
-        <Text style={styles.title}>База знаний</Text>
-        <Text style={styles.description}>
-          Этот производительный инструмент, разработанный для того, чтобы помочь вам лучше и удобнее управлять своими задачами в рамках учебы
-        </Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push('/(tabs)/home')} 
-        >
-          <Text style={styles.buttonText}>Зарегистрироваться</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <Image source={require('../assets/images/goose.png')} style={styles.image} />
+      <Text style={styles.title}>База знаний</Text>
+      <Text style={styles.description}>
+        Этот производительный инструмент, разработанный для того, чтобы помочь вам лучше и удобнее управлять своими задачами в рамках учебы
+      </Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push('/home')} 
-        >
-          <Text style={styles.buttonText}>Войти</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push('/auth/login')}
+      >
+        <Text style={styles.buttonText}>Войти</Text>
+      </TouchableOpacity>
 
-      </View>
+      <TouchableOpacity 
+        style={styles.switchButton} 
+        onPress={() => router.push('/auth/register')}
+      >
+        <Text style={styles.switchButtonText}>Нет аккаунта? Зарегистрироваться</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -47,10 +45,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     fontWeight: '600',
-  },  
-
-  background: {
-    flex: 1,
+  },
+  switchButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginVertical: 15,
+  },
+  switchButtonText: {
+    fontSize: 16,
+    color: '#3D76F7',
+    fontWeight: '600',
   },
   container: {
     flex: 1,
