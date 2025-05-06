@@ -98,6 +98,7 @@ export default function Register() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor="#999"
+                textContentType='oneTimeCode'
               />
 
               <TextInput
@@ -107,6 +108,7 @@ export default function Register() {
                 value={password}
                 onChangeText={setPassword}
                 placeholderTextColor="#999"
+                textContentType='oneTimeCode'
               />
 
               <TouchableOpacity style={styles.button} onPress={handleRegister}>
