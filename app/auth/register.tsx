@@ -15,20 +15,30 @@ import {
   Keyboard,
 } from 'react-native';
 import { useUser } from '../../lib/UserContext';
-import { setRegistered } from '@/redux/slices/authSlice';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
+import { setUserData } from '../../redux/slices/authSlice';
 
-
-
-interface User {
-  firstname: string;
-  lastname: string;
-  group: string;
+// Типы запроса и ответа
+type RegisterRequest = {
+  first_name: string;
+  last_name: string;
+  group_name: string;
   email: string;
   password: string;
-  role: string;
-}
+  role: 'STUDENT';
+};
+
+type RegisterResponse = {
+  user: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    role: string;
+    group_name: string;
+  };
+  access_token: string;
+};
 
 export default function Register() {
   const router = useRouter();
@@ -46,37 +56,54 @@ export default function Register() {
       Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
       return;
     }
-  
+
+    const requestData: RegisterRequest = {
+      first_name: firstname,
+      last_name: lastname,
+      group_name: group,
+      email,
+      password,
+      role: 'STUDENT',
+    };
+
     try {
-      console.log('Запрос ушел на сервер');
-      const response = await axios.post('http://baze36.ru:3000/auth/register/', {
-        first_name : firstname,
-        last_name: lastname,
-        group_name: group,
-        email,
-        password,
-        role: 'STUDENT', // роль юзера
+      console.log('Отправка данных регистрации...');
+      const response = await axios.post<RegisterResponse>(
+        'http://baze36.ru:3000/auth/register/',
+        requestData,
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      const { user } = response.data;
+
+      dispatch(
+        setUserData({
+          isRegistered: true,
+          id: user.id,
+          group: user.group_name,
+          token: response.data.access_token
+        })
+      );
+
+      setUser({
+        firstName: user.first_name,
+        lastName: user.last_name,
+        avatar: null,
+        role: user.role,
       });
-  
-      if (response.status === 201 || response.status === 200) {
-        dispatch(setRegistered(true));
-        setUser({
-          firstName: firstname,
-          lastName: lastname,
-          avatar: null,
-        });
-        console.log('Успешная регистрация:', response.data);
-        router.replace('/home');
-      } else {
-        Alert.alert('Ошибка', 'Что-то пошло не так. Попробуйте снова.');
-        console.log('Ошибка:', response.status, response.data);
-      }
+
+      console.log('Регистрация успешна:', response.data);
+      router.replace('/home');
     } catch (error: any) {
       console.error('Ошибка регистрации:', error.response?.data || error.message);
-      Alert.alert('Ошибка регистрации', error.response?.data?.detail || 'Произошла ошибка при регистрации.');
+      Alert.alert(
+        'Ошибка регистрации',
+        error.response?.data?.detail || error.response?.data?.message || 'Произошла ошибка при регистрации.'
+      );
     }
   };
-  
 
   return (
     <ImageBackground
@@ -128,7 +155,7 @@ export default function Register() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor="#999"
-                textContentType='oneTimeCode'
+                textContentType="emailAddress"
               />
 
               <TextInput
@@ -138,7 +165,7 @@ export default function Register() {
                 value={password}
                 onChangeText={setPassword}
                 placeholderTextColor="#999"
-                textContentType='oneTimeCode'
+                textContentType="password"
               />
 
               <TouchableOpacity style={styles.button} onPress={handleRegister}>

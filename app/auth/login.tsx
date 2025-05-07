@@ -14,35 +14,53 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import { useUser } from '../../lib/UserContext';
+import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { setRegistered } from '@/redux/slices/authSlice';
+import { setUserData } from '@/redux/slices/authSlice';
+import { useUser } from '../../lib/UserContext';
 
 export default function Login() {
   const router = useRouter();
-  const { setUser } = useUser();
   const dispatch = useDispatch();
+  const { setUser } = useUser();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
       return;
     }
 
-    dispatch(setRegistered(true));
+    setLoading(true);
 
-    setUser({
-      firstName: 'Имя',
-      lastName: 'Фамилия',
-      avatar: null,
-    });
+    try {
+      const response = await axios.post('http://baze36.ru:3000/auth/login', {
+        email,
+        password,
+      });
 
-    console.log('Вошел пользователь:', { email, password });
+      const { access_token, userId, group_name } = response.data;
 
-    router.replace('/home');
+
+      // Устанавливаем в Redux
+      dispatch(setUserData({
+        isRegistered: true,
+        id: userId.toString(),
+        token: access_token,
+        group: group_name || 'default',
+      }));
+
+      console.log('Успешный логин:', response.data);
+      router.replace('/home');
+    } catch (error: any) {
+      console.error('Ошибка логина:', error.response?.data || error.message);
+      Alert.alert('Ошибка авторизации', error.response?.data?.message || 'Что-то пошло не так');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,7 +86,6 @@ export default function Login() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor="#999"
-                textContentType='oneTimeCode'
               />
 
               <TextInput
@@ -78,11 +95,10 @@ export default function Login() {
                 value={password}
                 onChangeText={setPassword}
                 placeholderTextColor="#999"
-                textContentType='oneTimeCode'
               />
 
-              <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Войти</Text>
+              <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+                <Text style={styles.buttonText}>{loading ? 'Входим...' : 'Войти'}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

@@ -4,6 +4,7 @@ type User = {
   firstName: string;
   lastName: string;
   avatar: string | null;
+  role: 'STUDENT' | 'ADMIN' | string;
 };
 
 type UserContextType = {
@@ -15,6 +16,7 @@ const defaultUser: User = {
   firstName: 'Пупсик',
   lastName: 'Пупсикович',
   avatar: null,
+  role: 'ADMIN',
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
