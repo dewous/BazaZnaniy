@@ -1,9 +1,46 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, ImageBackground } from 'react-native';
-import { useUser } from '../../lib/UserContext';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, ImageBackground, ActivityIndicator, Alert } from 'react-native';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 export default function HomeScreen() {
-  const { user } = useUser();
+  const userId = useSelector((state: RootState) => state.auth.id); // Получаем userId из Redux
+  const token = useSelector((state: RootState) => state.auth.token); // Получаем токен из Redux
+
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!token) throw new Error('Токен не найден');
+        const response = await axios.get(`http://baze36.ru:3000/auth/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(response.data); // Сохраняем данные пользователя в состояние
+      } catch (error: any) {
+        console.error(error);
+        Alert.alert('Ошибка', 'Не удалось загрузить данные пользователя');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId && token) {
+      fetchUser(); // Загружаем данные пользователя при монтировании компонента
+    }
+  }, [userId, token]);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#3D76F7" />
+      </View>
+    );
+  }
 
   return (
     <ImageBackground
@@ -14,16 +51,12 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Image
-            source={
-              user?.avatar
-                ? { uri: user.avatar }
-                : require('../../assets/images/avatar.jpg')
-            }
+            source={user?.avatar ? { uri: user.avatar } : require('../../assets/images/avatar.jpg')}
             style={styles.avatar}
           />
           <Text style={styles.greeting}>Добро пожаловать!</Text>
           <Text style={styles.name}>
-            {user?.firstName || ''} {user?.lastName || ''}
+            {user?.first_name || ''} {user?.last_name || ''}
           </Text>
         </View>
 
@@ -72,4 +105,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

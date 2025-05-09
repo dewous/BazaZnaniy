@@ -9,6 +9,9 @@ import {
   ImageBackground,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,9 +50,7 @@ export default function ProfileScreen() {
 
     const fetchUser = async () => {
       try {
-        if (!token) {
-          throw new Error('Токен не найден');
-        }
+        if (!token) throw new Error('Токен не найден');
 
         const res = await axios.get(`http://baze36.ru:3000/auth/${userId}`, {
           headers: {
@@ -176,106 +177,125 @@ export default function ProfileScreen() {
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.container}>
-        <TouchableOpacity onPress={pickAvatar}>
-          <Image
-            source={avatar ? { uri: avatar } : require('../../assets/images/avatar.jpg')}
-            style={styles.avatar}
-          />
-          <Text style={styles.changeAvatarText}>Изменить аватар</Text>
-        </TouchableOpacity>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Имя</Text>
-          <TextInput
-            style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Фамилия</Text>
-          <TextInput
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Группа</Text>
-          <TextInput
-            style={styles.input}
-            value={group}
-            onChangeText={setGroup}
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Старый пароль</Text>
-          <TextInput
-            style={styles.input}
-            secureTextEntry={!showPassword}
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            placeholder="Старый пароль"
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Новый пароль</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              secureTextEntry={!showPassword}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              placeholder="Новый пароль"
-              placeholderTextColor="#999"
-            />
-            <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
-              <Ionicons
-                name={showPassword ? 'eye-off' : 'eye'}
-                size={24}
-                color="#888"
-                style={styles.eyeIcon}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <TouchableOpacity onPress={pickAvatar}>
+              <Image
+                source={avatar ? { uri: avatar } : require('../../assets/images/avatar.jpg')}
+                style={styles.avatar}
               />
+              <Text style={styles.changeAvatarText}>Изменить аватар</Text>
+            </TouchableOpacity>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Имя</Text>
+              <TextInput
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Фамилия</Text>
+              <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Группа</Text>
+              <TextInput
+                style={styles.input}
+                value={group}
+                onChangeText={setGroup}
+                placeholderTextColor="#999"
+                textContentType='oneTimeCode'
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Старый пароль</Text>
+              <TextInput
+                style={styles.input}
+                secureTextEntry={!showPassword}
+                value={oldPassword}
+                onChangeText={setOldPassword}
+                placeholder="Старый пароль"
+                placeholderTextColor="#999"
+                textContentType='oneTimeCode'
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Новый пароль</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  secureTextEntry={!showPassword}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder="Новый пароль"
+                  placeholderTextColor="#999"
+                  textContentType='oneTimeCode'
+                />
+                <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
+                  <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color="#888"
+                    style={styles.eyeIcon}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={handleSave}>
+              <Text style={styles.buttonText}>Сохранить изменения</Text>
+            </TouchableOpacity>
+
+            {role === 'ADMIN' && (
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: '#28A745', marginTop: 12 }]}
+                onPress={() => router.push('/admin/admin-panel')}
+              >
+                <Text style={styles.buttonText}>Панель администратора</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity style={[styles.button, { marginTop: 12 }]} onPress={handleLogout}>
+              <Text style={styles.buttonText}>Выйти</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.deletebutton, { marginTop: 12 }]} onPress={handleDeleteProfile}>
+              <Text style={styles.buttonText}>Удалить профиль</Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleSave}>
-          <Text style={styles.buttonText}>Сохранить изменения</Text>
-        </TouchableOpacity>
-
-        {role === 'ADMIN' && (
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#28A745', marginTop: 12 }]}
-            onPress={() => router.push('/admin/admin-panel')}
-          >
-            <Text style={styles.buttonText}>Панель администратора</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity style={[styles.button, { marginTop: 12 }]} onPress={handleLogout}>
-          <Text style={styles.buttonText}>Выйти</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={[styles.deletebutton, { marginTop: 12 }]} onPress={handleDeleteProfile}>
-          <Text style={styles.buttonText}>Удалить профиль</Text>
-        </TouchableOpacity>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingBottom: 40,
+  },
   container: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
   avatar: {
     width: 100, height: 100, borderRadius: 50,
