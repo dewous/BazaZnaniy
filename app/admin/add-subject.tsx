@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ImageBackground, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ImageBackground,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import axios from 'axios';
@@ -9,6 +20,7 @@ import { Picker } from '@react-native-picker/picker';
 export default function AddSubjectScreen() {
   const token = useSelector((state: RootState) => state.auth.token);
   const [title, setTitle] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [subjectType, setSubjectType] = useState<'Лекционные' | 'Практические' | 'Лабораторные'>('Лекционные');
   const [loading, setLoading] = useState(false);
 
@@ -17,25 +29,46 @@ export default function AddSubjectScreen() {
       Alert.alert('Ошибка', 'Введите название предмета');
       return;
     }
-
+  
+    if (!groupName.trim()) {
+      Alert.alert('Ошибка', 'Введите название группы');
+      return;
+    }
+  
     try {
       setLoading(true);
-
-      await axios.post(
-        'http://baze36.ru:3000/subject',
+      console.log('Отправка запроса с данными:');
+      console.log('TOKEN:', token);
+      console.log('TITLE:', title);
+      console.log('GROUP NAME:', groupName);
+      console.log('SUBJECT TYPE:', subjectType);
+  
+      // Запрос на сервер
+      const response = await axios.post(
+        'http://baze36.ru:3000/subjects',
         {
           name: title,
           subject_type: subjectType,
+          groupNames: [groupName],
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
+  
+      console.log('Ответ от сервера:', response.data);
+  
       Alert.alert('Успех', 'Предмет успешно добавлен');
       router.back();
     } catch (error: any) {
-      console.error(error);
+      console.error('Ошибка при отправке запроса:', error);
+      // Логируем подробности ошибки
+      if (error.response) {
+        console.error('Ответ сервера с ошибкой:', error.response.data);
+      } else {
+        console.error('Ошибка без ответа от сервера:', error.message);
+      }
+  
       Alert.alert('Ошибка', error.response?.data?.message || 'Не удалось создать предмет');
     } finally {
       setLoading(false);
@@ -75,12 +108,21 @@ export default function AddSubjectScreen() {
               placeholderTextColor="#aaa"
             />
 
+            <Text style={styles.label}>Название группы</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Например: 1488"
+              value={groupName}
+              onChangeText={setGroupName}
+              placeholderTextColor="#aaa"
+            />
+
             <Text style={styles.label}>Тип предмета</Text>
             <Picker
               selectedValue={subjectType}
               onValueChange={handleSubjectTypeChange}
               style={styles.picker}
-              itemStyle={styles.pickerItem}  // Здесь мы добавляем itemStyle
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="Лекционные" value="Лекционные" />
               <Picker.Item label="Практические" value="Практические" />
@@ -145,7 +187,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pickerItem: {
-    color: '#000',  // Цвет текста для всех элементов Picker
+    color: '#000',
   },
   button: {
     backgroundColor: '#3D76F7',

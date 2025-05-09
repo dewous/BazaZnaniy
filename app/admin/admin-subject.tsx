@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ImageBackground,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -27,14 +28,11 @@ export default function AdminSubjectsPanel() {
 
   const fetchSubjects = async () => {
     try {
-      const res = await axios.get('http://baze36.ru:3000/subject', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axios.get('http://baze36.ru:3000/subjects/all', {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setSubjects(res.data);
     } catch (error: any) {
-      console.error('Ошибка при загрузке предметов', error);
       Alert.alert('Ошибка', 'Не удалось загрузить предметы');
     } finally {
       setLoading(false);
@@ -46,25 +44,29 @@ export default function AdminSubjectsPanel() {
   }, []);
 
   const deleteSubject = async (id: string) => {
+    console.log(`[Удаление] Инициировано удаление предмета с ID: ${id}`);
+  
     Alert.alert('Удалить предмет?', 'Это действие нельзя отменить.', [
-      { text: 'Отмена', style: 'cancel' },
+      { text: 'Отмена', style: 'cancel', onPress: () => console.log('[Удаление] Отмена пользователем') },
       {
         text: 'Удалить',
         style: 'destructive',
         onPress: async () => {
           try {
-            await axios.delete(`http://baze36.ru:3000/subject/${id}`, {
+            console.log(`[Удаление] Отправка запроса DELETE на /subjects/${id}`);
+            await axios.delete(`http://baze36.ru:3000/subjects/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            setSubjects(subjects.filter(subject => subject.id !== id));
+            console.log(`[Удаление] Успешно удалён предмет с ID: ${id}`);
+            setSubjects(prev => prev.filter(subject => subject.id !== id));
           } catch (error: any) {
+            console.error(`[Удаление] Ошибка при удалении предмета с ID: ${id}`, error);
             Alert.alert('Ошибка', 'Не удалось удалить предмет');
           }
         },
       },
     ]);
   };
-
   const renderItem = ({ item }: { item: SubjectCard }) => (
     <View style={styles.card}>
       <View>
@@ -72,83 +74,125 @@ export default function AdminSubjectsPanel() {
         <Text style={styles.subjectType}>{item.subject_type}</Text>
       </View>
       <TouchableOpacity onPress={() => deleteSubject(item.id)}>
-        <Text style={styles.delete}>Удалить</Text>
+        <Ionicons name="trash-outline" size={22} color="#E53935" />
       </TouchableOpacity>
     </View>
   );
 
   return (
     <ImageBackground
-      source={{ uri: 'https://your-background-image-url.com' }}
-      style={styles.container}
+    source={require('../../assets/images/background.jpg')}
+    style={styles.background}
+    resizeMode="cover"
     >
-      <Text style={styles.header}>Карточки предметов</Text>
+      <View style={styles.overlay} />
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#3D76F7" />
-      ) : subjects.length === 0 ? (
-        <Text style={styles.emptyText}>Не добавлено ни одной карточки</Text>
-      ) : (
-        <FlatList
-          data={subjects}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 80 }}
-        />
-      )}
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={20} color="#3D76F7" />
+          <Text style={styles.backButtonText}>Назад</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => router.push('/admin/add-subject')}
-      >
-        <Text style={styles.addButtonText}>Добавить новый предмет</Text>
-      </TouchableOpacity>
+        <Text style={styles.header}>Карточки предметов</Text>
 
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => router.back()}
-      >
-        <Text style={styles.backButtonText}>← Назад</Text>
-      </TouchableOpacity>
+        {loading ? (
+          <ActivityIndicator size="large" color="#3D76F7" />
+        ) : subjects.length === 0 ? (
+          <Text style={styles.emptyText}>Не добавлено ни одной карточки</Text>
+        ) : (
+          <FlatList
+            data={subjects}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 120 }}
+          />
+        )}
+
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/admin/add-subject')}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, justifyContent: 'flex-start' },
-  header: { fontSize: 20, fontWeight: '600', marginBottom: 16, color: 'black' },
-  emptyText: { fontSize: 16, textAlign: 'center', color: 'black', marginTop: 32 },
-  card: {
-    backgroundColor: '#f9f9f9',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  background: {
+    flex: 1,
   },
-  title: { fontSize: 16, fontWeight: '500', color: 'black' },
-  subjectType: { fontSize: 14, color: 'black', marginTop: 4 },
-  delete: { color: '#E53935', fontWeight: '500' },
-  addButton: {
-    backgroundColor: '#3D76F7',
-    padding: 16,
-    borderRadius: 16,
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.1)', // прозрачный белый фон
   },
-  addButtonText: { color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: '600' },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 15,
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginTop: 8,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 12,
+    marginTop: 0.1,
   },
   backButtonText: {
     fontSize: 16,
     color: '#3D76F7',
     fontWeight: '600',
+    marginLeft: 4,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#6e6e6e',
+    marginTop: 32,
+  },
+  card: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  subjectType: {
+    fontSize: 14,
+    color: '#6e6e6e',
+    marginTop: 4,
+  },
+  fab: {
+    backgroundColor: '#3D76F7',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
   },
 });
-

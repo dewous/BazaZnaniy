@@ -248,8 +248,7 @@ export default function ProfileScreen() {
                   value={newPassword}
                   onChangeText={setNewPassword}
                   placeholder="Новый пароль"
-                  placeholderTextColor="#999"
-                  textContentType='oneTimeCode'
+                  placeholderTextColor="#999" 
                 />
                 <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
                   <Ionicons
