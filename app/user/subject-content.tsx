@@ -33,13 +33,16 @@ export default function UserTopicsPanel() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const fetchTopics = async () => {
+    console.log('Загрузка тем для subjectId:', subjectId);
     try {
       const res = await axios.get(`http://baze36.ru:3000/cards/by-subject`, {
         params: { subjectId },
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Темы загружены:', res.data);
       setTopics(res.data);
-    } catch {
+    } catch (error) {
+      console.error('Ошибка при загрузке тем:', error);
       Alert.alert('Ошибка', 'Не удалось загрузить темы');
     } finally {
       setLoading(false);
@@ -47,22 +50,25 @@ export default function UserTopicsPanel() {
   };
 
   const fetchFavorites = useCallback(async () => {
+    console.log('Загрузка избранных тем');
     try {
       const res = await axios.get('http://baze36.ru:3000/cards/favorites', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const favoriteTopicIds = new Set<string>(res.data.map((t: { id: string }) => t.id));
+      console.log('Избранные темы загружены:', Array.from(favoriteTopicIds));
       setFavorites(favoriteTopicIds);
-    } catch {
+    } catch (error) {
+      console.error('Ошибка при загрузке избранных тем:', error);
       Alert.alert('Ошибка', 'Не удалось загрузить избранные темы');
     }
   }, [token]);
 
   const toggleFavorite = async (topicId: string) => {
-    console.log(`Текущая операция с темой ${topicId}`);
+    console.log('Переключение избранного для темы:', topicId);
     try {
       if (favorites.has(topicId)) {
-        console.log(`Удаление темы ${topicId} из избранного`);
+        console.log('Удаление из избранного:', topicId);
         await axios.delete(`http://baze36.ru:3000/cards/favorite`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { cardId: topicId },
@@ -74,21 +80,22 @@ export default function UserTopicsPanel() {
         });
         Alert.alert('Успех', 'Тема удалена из избранного');
       } else {
-        console.log(`Добавление темы ${topicId} в избранное`);
+        console.log('Добавление в избранное:', topicId);
         await axios.post(`http://baze36.ru:3000/cards/favorite`, {}, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { cardId: topicId },  // добавляем cardId в параметры запроса
+          params: { cardId: topicId },
         });
         setFavorites(prev => new Set(prev).add(topicId));
         Alert.alert('Успех', 'Тема добавлена в избранное');
       }
     } catch (error) {
-      console.error('Ошибка при изменении избранного:', error);
+      console.error('Ошибка при переключении избранного:', error);
       Alert.alert('Ошибка', 'Не удалось обновить избранное');
     }
   };
 
   useEffect(() => {
+    console.log('Монтирование компонента UserTopicsPanel');
     fetchTopics();
     fetchFavorites();
   }, [fetchFavorites]);
@@ -113,7 +120,8 @@ export default function UserTopicsPanel() {
       </View>
 
       <TouchableOpacity
-        onPress={() =>
+        onPress={() => {
+          console.log('Переход к содержимому темы:', item.id);
           router.push({
             pathname: '/user/topic-content',
             params: {
@@ -122,8 +130,8 @@ export default function UserTopicsPanel() {
               description: item.description,
               subjectId,
             },
-          })
-        }
+          });
+        }}
         style={styles.viewContentButton}
       >
         <Text style={styles.viewContentButtonText}>Просмотреть содержимое темы</Text>

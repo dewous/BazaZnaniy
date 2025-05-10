@@ -10,7 +10,7 @@ export default function AdminPanel() {
         <Text style={styles.buttonText}>Управление предметами</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/admin/edit-user')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/admin/user-administration/active-users')}>
         <Text style={styles.buttonText}>Редактировать профиль студента</Text>
       </TouchableOpacity>
 

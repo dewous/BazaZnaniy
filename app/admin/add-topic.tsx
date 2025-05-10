@@ -20,11 +20,10 @@ export default function AddTopicScreen() {
   const token = useSelector((state: RootState) => state.auth.token);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { subjectId } = useLocalSearchParams<{ subjectId: string }>();
-
-  // Преобразование subjectId в целое число
   const subjectIdNumber = parseInt(subjectId as string, 10);
 
   const handleSubmit = async () => {
@@ -33,39 +32,39 @@ export default function AddTopicScreen() {
       return;
     }
 
-    // Запрещаем отправку формы, если поле комментариев пустое
     if (!description.trim()) {
       Alert.alert('Ошибка', 'Введите описание темы');
       return;
     }
 
+    if (!content.trim()) {
+      Alert.alert('Ошибка', 'Введите содержимое темы');
+      return;
+    }
+
     try {
       setLoading(true);
-      console.log('Отправка запроса на создание темы...', { title, description, subjectId: subjectIdNumber });
 
       const response = await axios.post(
         `http://baze36.ru:3000/cards`,
         {
           title,
           description,
-          subject_id: subjectIdNumber, // Используем целочисленный subjectId
+          content,
+          subject_id: subjectIdNumber,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      console.log('Ответ от сервера:', response.data);
       Alert.alert('Успех', 'Тема успешно добавлена');
       router.back();
     } catch (error: any) {
       console.error('Ошибка при отправке запроса:', error);
-      
       if (error.response) {
-        console.error('Ответ сервера с ошибкой:', error.response.data);
         Alert.alert('Ошибка', error.response.data.message || 'Не удалось создать тему');
       } else {
-        console.error('Ошибка без ответа от сервера:', error.message);
         Alert.alert('Ошибка', error.message || 'Не удалось создать тему');
       }
     } finally {
@@ -104,10 +103,20 @@ export default function AddTopicScreen() {
 
             <Text style={styles.label}>Описание</Text>
             <TextInput
-              style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+              style={[styles.input, styles.textArea]}
               placeholder="Описание темы (обязательно)"
               value={description}
               onChangeText={setDescription}
+              multiline
+              placeholderTextColor="#aaa"
+            />
+
+            <Text style={styles.label}>Содержимое</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Основной текст или объяснение (обязательно)"
+              value={content}
+              onChangeText={setContent}
               multiline
               placeholderTextColor="#aaa"
             />
@@ -161,6 +170,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     fontSize: 16,
     marginBottom: 20,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
   },
   button: {
     backgroundColor: '#3D76F7',

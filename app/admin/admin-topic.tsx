@@ -18,6 +18,7 @@ import { RootState } from '@/redux/store';
 interface Topic {
   id: string;
   title: string;
+  content: string;
   description: string;
 }
 
@@ -48,25 +49,27 @@ export default function AdminTopicsPanel() {
     fetchTopics();
   }, []);
 
-  const deleteTopic = async (id: string) => {
-    Alert.alert('Удалить тему?', 'Это действие нельзя отменить.', [
-      { text: 'Отмена', style: 'cancel' },
-      {
-        text: 'Удалить',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await axios.delete(`http://baze36.ru:3000/cards/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            setTopics((prev) => prev.filter((topic) => topic.id !== id));
-          } catch (error: any) {
-            Alert.alert('Ошибка', 'Не удалось удалить тему');
-          }
-        },
+const deleteTopic = async (id: string) => {
+  Alert.alert('Удалить тему?', 'Это действие нельзя отменить.', [
+    { text: 'Отмена', style: 'cancel' },
+    {
+      text: 'Удалить',
+      style: 'destructive',
+      onPress: async () => {
+        try {
+          // Изменяем URL запроса, используя параметр id в пути
+          await axios.delete(`http://baze36.ru:3000/cards/by-id/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setTopics((prev) => prev.filter((topic) => topic.id !== id));
+        } catch (error: any) {
+          Alert.alert('Ошибка', 'Не удалось удалить тему');
+        }
       },
-    ]);
-  };
+    },
+  ]);
+};
+
 
   const renderItem = ({ item }: { item: Topic }) => (
     <View style={styles.card}>
@@ -85,6 +88,7 @@ export default function AdminTopicsPanel() {
                   id: item.id,
                   title: item.title,
                   description: item.description,
+                  content: item.content,
                   subjectId,
                 },
               })
@@ -111,6 +115,7 @@ export default function AdminTopicsPanel() {
                   topicId: item.id,
                   title: item.title,
                   description: item.description,
+                   content: item.content,
                   subjectId,
             },
           })
