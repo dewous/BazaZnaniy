@@ -274,13 +274,14 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity style={[styles.button, { marginTop: 12 }]} onPress={handleLogout}>
-              <Text style={styles.buttonText}>Выйти</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.deletebutton, { marginTop: 12 }]} onPress={handleDeleteProfile}>
-              <Text style={styles.buttonText}>Удалить профиль</Text>
-            </TouchableOpacity>
+            <View style={styles.rowButtons}>
+              <TouchableOpacity style={[styles.smallButton, { backgroundColor: 'red' }]} onPress={handleDeleteProfile}>
+                <Text style={styles.buttonText}>Удалить</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.smallButton, { backgroundColor: '#3D76F7' }]} onPress={handleLogout}>
+                <Text style={styles.buttonText}>Выйти</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -312,6 +313,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
+    color: '#222', // Более тёмный цвет текста
   },
   passwordContainer: { flexDirection: 'row', alignItems: 'center' },
   eyeIcon: { marginLeft: 8 },
@@ -324,15 +326,15 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 350,
   },
-  deletebutton: {
-    backgroundColor: 'red',
+  smallButton: {
+    backgroundColor: '#3D76F7',
     paddingVertical: 14,
     paddingHorizontal: 24,
     marginVertical: 10,
     borderRadius: 16,
-    width: '100%',
-    maxWidth: 350,
+    width: '48%',
   },
   buttonText: { color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' },
+  rowButtons: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', maxWidth: 350 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

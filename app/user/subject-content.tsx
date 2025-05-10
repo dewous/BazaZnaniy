@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   ImageBackground,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -21,14 +21,16 @@ interface Topic {
   description: string;
 }
 
-export default function AdminTopicsPanel() {
+export default function UserTopicsPanel() {
   const { subjectId, subjectName } = useLocalSearchParams<{
     subjectId: string;
     subjectName: string;
   }>();
   const token = useSelector((state: RootState) => state.auth.token);
+
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   const fetchTopics = async () => {
     try {
@@ -37,36 +39,59 @@ export default function AdminTopicsPanel() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTopics(res.data);
-    } catch (error: any) {
+    } catch {
       Alert.alert('Ошибка', 'Не удалось загрузить темы');
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchFavorites = useCallback(async () => {
+    try {
+      const res = await axios.get('http://baze36.ru:3000/cards/favorites', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const favoriteTopicIds = new Set<string>(res.data.map((t: { id: string }) => t.id));
+      setFavorites(favoriteTopicIds);
+    } catch {
+      Alert.alert('Ошибка', 'Не удалось загрузить избранные темы');
+    }
+  }, [token]);
+
+  const toggleFavorite = async (topicId: string) => {
+    console.log(`Текущая операция с темой ${topicId}`);
+    try {
+      if (favorites.has(topicId)) {
+        console.log(`Удаление темы ${topicId} из избранного`);
+        await axios.delete(`http://baze36.ru:3000/cards/favorite`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { cardId: topicId },
+        });
+        setFavorites(prev => {
+          const updated = new Set(prev);
+          updated.delete(topicId);
+          return updated;
+        });
+        Alert.alert('Успех', 'Тема удалена из избранного');
+      } else {
+        console.log(`Добавление темы ${topicId} в избранное`);
+        await axios.post(`http://baze36.ru:3000/cards/favorite`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { cardId: topicId },  // добавляем cardId в параметры запроса
+        });
+        setFavorites(prev => new Set(prev).add(topicId));
+        Alert.alert('Успех', 'Тема добавлена в избранное');
+      }
+    } catch (error) {
+      console.error('Ошибка при изменении избранного:', error);
+      Alert.alert('Ошибка', 'Не удалось обновить избранное');
+    }
+  };
+
   useEffect(() => {
     fetchTopics();
-  }, []);
-
-  const deleteTopic = async (id: string) => {
-    Alert.alert('Удалить тему?', 'Это действие нельзя отменить.', [
-      { text: 'Отмена', style: 'cancel' },
-      {
-        text: 'Удалить',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await axios.delete(`http://baze36.ru:3000/cards/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            setTopics((prev) => prev.filter((topic) => topic.id !== id));
-          } catch (error: any) {
-            Alert.alert('Ошибка', 'Не удалось удалить тему');
-          }
-        },
-      },
-    ]);
-  };
+    fetchFavorites();
+  }, [fetchFavorites]);
 
   const renderItem = ({ item }: { item: Topic }) => (
     <View style={styles.card}>
@@ -75,43 +100,27 @@ export default function AdminTopicsPanel() {
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.subjectType}>{item.description}</Text>
         </View>
-
-        <View style={styles.iconButtons}>
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: '/admin/edit-topic',
-                params: {
-                  id: item.id,
-                  title: item.title,
-                  description: item.description,
-                  subjectId,
-                },
-              })
-            }
-            style={styles.editButton}
-          >
-            <Ionicons name="create-outline" size={24} color="#3D76F7" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => deleteTopic(item.id)}
-            style={styles.deleteButton}
-          >
-            <Ionicons name="trash-outline" size={28} color="#E53935" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(item.id)}
+        >
+          <Ionicons
+            name={favorites.has(item.id) ? 'star' : 'star-outline'}
+            size={24}
+            color={favorites.has(item.id) ? '#FFD700' : '#D3D3D3'}
+          />
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity
         onPress={() =>
           router.push({
-            pathname: '/admin/topic-content',
+            pathname: '/user/topic-content',
             params: {
-                  topicId: item.id,
-                  title: item.title,
-                  description: item.description,
-                  subjectId,
+              topicId: item.id,
+              title: item.title,
+              description: item.description,
+              subjectId,
             },
           })
         }
@@ -130,9 +139,9 @@ export default function AdminTopicsPanel() {
     >
       <View style={styles.overlay} />
       <View style={styles.container}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.push('/(tabs)/subjects')}>
           <Ionicons name="arrow-back" size={20} color="#3D76F7" />
-          <Text style={styles.backButtonText}>Назад</Text>
+          <Text style={styles.backButtonText}>Ко всем предметам</Text>
         </TouchableOpacity>
 
         <Text style={styles.header}>Темы: {subjectName}</Text>
@@ -149,18 +158,6 @@ export default function AdminTopicsPanel() {
             contentContainerStyle={{ paddingBottom: 120 }}
           />
         )}
-
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() =>
-            router.push({
-              pathname: '/admin/add-topic',
-              params: { subjectId: subjectId as string },
-            })
-          }
-        >
-          <Ionicons name="add" size={28} color="#fff" />
-        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -233,17 +230,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6e6e6e',
   },
-  iconButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  editButton: {
-    padding: 4,
-    marginRight: 8,
-  },
-  deleteButton: {
-    padding: 4,
-  },
   viewContentButton: {
     marginTop: 12,
     paddingVertical: 10,
@@ -256,16 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  fab: {
-    backgroundColor: '#3D76F7',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
+  favoriteButton: {
+    padding: 6,
   },
 });

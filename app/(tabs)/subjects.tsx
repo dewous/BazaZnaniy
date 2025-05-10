@@ -13,6 +13,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 export default function Profile() {
   const token = useSelector((state: RootState) => state.auth.token);
@@ -117,22 +118,38 @@ export default function Profile() {
         <Text style={styles.title}>Все предметы</Text>
         <ScrollView contentContainerStyle={styles.subjectsContainer}>
           {subjects.map((subject) => (
-            <View key={subject.id} style={styles.subjectCard}>
+            <TouchableOpacity
+              key={subject.id}
+              style={styles.subjectCard}
+              onPress={() =>
+                router.push({
+                  pathname: '/user/subject-content',
+                  params: {
+                    subjectId: subject.id,
+                    title: subject.name,
+                    description: subject.description || '',
+                  },
+                })
+              }
+            >
               <View style={styles.cardContent}>
                 <Text style={styles.subjectName}>{subject.name}</Text>
                 <Text style={styles.subjectType}>{subject.subject_type}</Text>
               </View>
               <TouchableOpacity
                 style={styles.favoriteButton}
-                onPress={() => toggleFavorite(subject.id)}
+                onPress={(e) => {
+                  e.stopPropagation(); // Чтобы нажатие по звезде не вызывало переход
+                  toggleFavorite(subject.id);
+                }}
               >
                 <Ionicons
                   name={favorites.has(subject.id) ? 'star' : 'star-outline'}
-                  size={30}  // Увеличен размер иконки
+                  size={30} // Увеличен размер иконки
                   color={favorites.has(subject.id) ? '#FFD700' : '#D3D3D3'}
                 />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
@@ -175,12 +192,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   subjectName: {
-    fontSize: 22,  // Увеличен шрифт для имени предмета
+    fontSize: 22, // Увеличен шрифт для имени предмета
     fontWeight: 'bold',
     color: '#333',
   },
   subjectType: {
-    fontSize: 14,  // Увеличен шрифт для типа предмета
+    fontSize: 14, // Увеличен шрифт для типа предмета
     color: '#666',
     marginTop: 4,
   },
@@ -189,7 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 50,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0,
     shadowRadius: 4,
     elevation: 2,
   },
