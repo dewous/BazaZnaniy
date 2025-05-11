@@ -20,51 +20,68 @@ interface TopicContent {
   title: string;
   description: string;
   content: string;
+  subjectId: string;
 }
 
 export default function TopicContentScreen() {
-  const { topicId, title, description, subjectId } = useLocalSearchParams<{
-    topicId: string,
-    title: string,
-    description: string,
-    subjectId: string,
+  const { topicId, title,  description, subjectId} = useLocalSearchParams<{
+    topicId: string;
+    title: string;
+    description: string;
+    subjectId: string;
   }>();
+
+  console.log('Полученные параметры из useLocalSearchParams:', {
+    topicId,
+    title,
+    description,
+    subjectId
+  });
 
   const token = useSelector((state: RootState) => state.auth.token);
   const [topic, setTopic] = useState<TopicContent | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchTopic = async () => {
-    console.log('Запрос на получение темы', topicId);
+    console.log('[fetchTopic] Старт запроса для topicId:', topicId);  
 
     try {
       const res = await axios.get(`http://baze36.ru:3000/cards/by-subject`, {
-        params: { subjectId },
         headers: { Authorization: `Bearer ${token}` },
+        params: { subjectId } 
       });
 
-      console.log('Успешно получена тема:', res.data);
-      setTopic(res.data);
+      console.log('[fetchTopic] Ответ от сервера:', res.data);
+
+      setTopic(res.data[0] || null);
     } catch (error: any) {
-      console.error('Ошибка при получении темы:', error?.message || error);
+      console.error('[fetchTopic] Ошибка при запросе темы:', error?.message || error);
       Alert.alert('Ошибка', 'Не удалось загрузить содержимое темы');
     } finally {
       setLoading(false);
+      console.log('[fetchTopic] Завершён запрос');
     }
   };
 
   useEffect(() => {
+    console.log('[useEffect] Монтирование компонента. Запускаем fetchTopic()');
     fetchTopic();
   }, []);
 
   return (
     <ImageBackground
-      source={require('../../assets/images/background.jpg')} 
+      source={require('../../assets/images/background.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
       <View style={styles.container}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => {
+            console.log('[UI] Нажата кнопка Назад');
+            router.back();
+          }}
+        >
           <Ionicons name="arrow-back" size={20} color="#3D76F7" />
           <Text style={styles.backButtonText}>Назад</Text>
         </TouchableOpacity>
@@ -72,17 +89,25 @@ export default function TopicContentScreen() {
         <Text style={styles.header}>{title}</Text>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#3D76F7" />
+          <>
+            <ActivityIndicator size="large" color="#3D76F7" />
+            {console.log('[UI] Показываем индикатор загрузки')}
+          </>
         ) : topic ? (
           <ScrollView style={styles.contentBox}>
             <Text style={styles.label}>Описание:</Text>
-            <Text style={styles.text}>{topic.description}</Text>
+            <Text style={styles.text}>{description}</Text>
 
             <Text style={styles.label}>Содержимое:</Text>
-            <Text style={styles.text}>{topic.content || 'Нет содержимого.'}</Text>
+            <Text style={styles.text}>
+              {topic?.content?.trim() || 'Нет содержимого.'}
+            </Text>
           </ScrollView>
         ) : (
-          <Text style={styles.errorText}>Содержимое не найдено</Text>
+          <>
+            <Text style={styles.errorText}>Содержимое не найдено</Text>
+            {console.log('[UI] Тема не найдена или пустая')}
+          </>
         )}
       </View>
     </ImageBackground>
@@ -96,7 +121,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: 'rgba(248,249,250,0.1)', // немного прозрачный фон, чтобы текст был читаем
+    backgroundColor: 'rgba(248,249,250,0.1)',
   },
   backButton: {
     flexDirection: 'row',
@@ -125,11 +150,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 4,
     marginTop: 12,
-    color: '#3D3D3D',
+    color: 'black',
   },
   text: {
     fontSize: 15,
-    color: '#444',
+    color: 'black',
     lineHeight: 22,
   },
   errorText: {
