@@ -83,7 +83,7 @@ const deleteTopic = async (id: string) => {
           <TouchableOpacity
             onPress={() =>
               router.push({
-                pathname: '/admin/edit-topic',
+                pathname: '/admin/topic-administration/edit-topic',
                 params: {
                   id: item.id,
                   title: item.title,
@@ -110,7 +110,7 @@ const deleteTopic = async (id: string) => {
       <TouchableOpacity
         onPress={() =>
           router.push({
-            pathname: '/admin/topic-content',
+            pathname: '/admin/topic-administration/topic-content',
             params: {
                   topicId: item.id,
                   title: item.title,
@@ -129,7 +129,7 @@ const deleteTopic = async (id: string) => {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/background.jpg')}
+      source={require('../../../assets/images/background.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -159,7 +159,7 @@ const deleteTopic = async (id: string) => {
           style={styles.fab}
           onPress={() =>
             router.push({
-              pathname: '/admin/add-topic',
+              pathname: '/admin/topic-administration/add-topic',
               params: { subjectId: subjectId as string },
             })
           }

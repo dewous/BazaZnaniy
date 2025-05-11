@@ -86,7 +86,7 @@ export default function AdminSubjectsPanel() {
         <TouchableOpacity
           onPress={() =>
             router.push({
-              pathname: '/admin/edit-subject',
+              pathname: '/admin/subject-administration/edit-subject',
               params: { id: item.id, name: item.name, type: item.subject_type, group: item.subjectGroups.map((g) => g.groupName).join(', ') },
             })
           }
@@ -99,7 +99,7 @@ export default function AdminSubjectsPanel() {
           style={styles.textContainer}
           onPress={() =>
             router.push({
-              pathname: '/admin/edit-subject',
+              pathname: '/admin/subject-administration/edit-subject',
               params: { id: item.id, name: item.name, type: item.subject_type, group: item.subjectGroups.map((g) => g.groupName).join(', ') },
             })
           }
@@ -124,7 +124,7 @@ export default function AdminSubjectsPanel() {
           style={styles.viewTopicsButton}
           onPress={() =>
             router.push({
-                pathname: '/admin/admin-topic',
+                pathname: '/admin/topic-administration/admin-topic',
                 params: { subjectId: item.id, subjectName: item.name }
             })
           }
@@ -137,7 +137,7 @@ export default function AdminSubjectsPanel() {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/background.jpg')}
+      source={require('../../../assets/images/background.jpg')}
       style={styles.background}
       resizeMode="cover"
     >
@@ -165,7 +165,7 @@ export default function AdminSubjectsPanel() {
 
         <TouchableOpacity
           style={styles.fab}
-          onPress={() => router.push('/admin/add-subject')}
+          onPress={() => router.push('/admin/subject-administration/add-subject')}
         >
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>

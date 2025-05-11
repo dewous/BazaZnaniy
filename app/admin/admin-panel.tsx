@@ -6,7 +6,7 @@ export default function AdminPanel() {
     <View style={styles.container}>
       <Text style={styles.title}>Панель администратора</Text>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/admin/admin-subject')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/admin/subject-administration/admin-subject')}>
         <Text style={styles.buttonText}>Управление предметами</Text>
       </TouchableOpacity>
 
