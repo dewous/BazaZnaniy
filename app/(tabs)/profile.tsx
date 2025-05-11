@@ -202,6 +202,7 @@ export default function ProfileScreen() {
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholderTextColor="#999"
+                autoCapitalize='words'
               />
             </View>
 
@@ -212,6 +213,7 @@ export default function ProfileScreen() {
                 value={lastName}
                 onChangeText={setLastName}
                 placeholderTextColor="#999"
+                autoCapitalize='words'
               />
             </View>
 
@@ -223,6 +225,8 @@ export default function ProfileScreen() {
                 onChangeText={setGroup}
                 placeholderTextColor="#999"
                 textContentType='oneTimeCode'
+                autoCapitalize='characters'
+                autoCorrect={false}
               />
             </View>
 

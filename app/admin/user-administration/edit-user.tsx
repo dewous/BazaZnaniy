@@ -22,17 +22,20 @@ export default function EditUserScreen() {
 
   const token = useSelector((state: RootState) => state.auth.token);
 
-  const [firstName, setFirstName] = useState(first_name as string);
-  const [lastName, setLastName] = useState(last_name as string);
-  const [userEmail, setUserEmail] = useState(email as string);
-  const [groupName, setGroupName] = useState(group as string);
-  const [userRole, setUserRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN'>(role as 'STUDENT' | 'TEACHER' | 'ADMIN');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [groupName, setGroupName] = useState('');
+  const [userRole, setUserRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN'>('STUDENT');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log('Полученное значение group:', group);
-    console.log('Начальное значение groupName:', groupName);
-  }, []);
+    if (first_name) setFirstName(first_name as string);
+    if (last_name) setLastName(last_name as string);
+    if (email) setUserEmail(email as string);
+    if (group) setGroupName(group as string);
+    if (role) setUserRole(role as 'STUDENT' | 'TEACHER' | 'ADMIN');
+  }, [first_name, last_name, email, group, role]);
 
   const handleSubmit = async () => {
     if (!firstName.trim() || !lastName.trim() || !userEmail.trim()) {
@@ -51,10 +54,8 @@ export default function EditUserScreen() {
         role: userRole,
       };
 
-      console.log('Отправка данных пользователя:', dto);
-
-      const response = await axios.patch(
-        `http://baze36.ru:3000/users/${id}`,
+      await axios.patch(
+        `http://baze36.ru:3000/auth/${id}`,
         dto,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -64,7 +65,16 @@ export default function EditUserScreen() {
       Alert.alert('Успех', 'Данные пользователя обновлены');
       router.back();
     } catch (error: any) {
-      console.error('Ошибка при обновлении:', error);
+      console.error('Ошибка при обновлении:', {
+        message: error.message,
+        responseData: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+        requestData: error.config?.data,
+        requestUrl: error.config?.url,
+        method: error.config?.method,
+      });
+
       Alert.alert('Ошибка', error.response?.data?.message || 'Ошибка при обновлении');
     } finally {
       setLoading(false);
@@ -95,6 +105,7 @@ export default function EditUserScreen() {
               onChangeText={setFirstName}
               placeholder="Имя"
               placeholderTextColor="#aaa"
+              autoCapitalize="words"
             />
 
             <Text style={styles.label}>Фамилия</Text>
@@ -104,6 +115,8 @@ export default function EditUserScreen() {
               onChangeText={setLastName}
               placeholder="Фамилия"
               placeholderTextColor="#aaa"
+              autoCapitalize="words"
+              autoCorrect={false}
             />
 
             <Text style={styles.label}>Email</Text>
@@ -115,18 +128,18 @@ export default function EditUserScreen() {
               placeholderTextColor="#aaa"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
 
             <Text style={styles.label}>Группа</Text>
             <TextInput
               style={styles.input}
               value={groupName}
-              onChangeText={(text) => {
-                console.log('Изменено поле "Группа":', text);
-                setGroupName(text);
-              }}
+              onChangeText={setGroupName}
               placeholder="1488"
               placeholderTextColor="#aaa"
+              autoCapitalize="characters"
+              autoCorrect={false}
             />
 
             <Text style={styles.label}>Роль</Text>
@@ -134,6 +147,7 @@ export default function EditUserScreen() {
               selectedValue={userRole}
               onValueChange={(value) => setUserRole(value as 'STUDENT' | 'TEACHER' | 'ADMIN')}
               style={styles.picker}
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="Студент" value="STUDENT" />
               <Picker.Item label="Преподаватель" value="TEACHER" />
@@ -191,6 +205,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f2f2',
     marginBottom: 20,
   },
+  pickerItem: {
+    color: 'black'
+  },
   button: {
     backgroundColor: '#3D76F7',
     paddingVertical: 14,
@@ -204,9 +221,11 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginBottom: 16,
+    alignSelf: 'flex-start',
   },
   backButtonText: {
-    color: '#3D76F7',
     fontSize: 16,
+    color: '#3D76F7',
+    fontWeight: '600',
   },
 });

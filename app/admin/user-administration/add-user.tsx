@@ -131,6 +131,7 @@ export default function AddUserScreen() {
                   console.log('Last name input changed:', text); // Логирование изменения фамилии
                   setLastName(capitalizeFirstLetter(text));
                 }}
+                autoCorrect={false}
               />
 
               <Text style={styles.label}>Email</Text>
@@ -145,6 +146,7 @@ export default function AddUserScreen() {
                   console.log('Email input changed:', text); // Логирование изменения email
                   setEmail(text);
                 }}
+                autoCorrect={false}
               />
 
               <Text style={styles.label}>Группа</Text>
@@ -158,6 +160,7 @@ export default function AddUserScreen() {
                   console.log('Group input changed:', text); // Логирование изменения группы
                   setGroup(text);
                 }}
+                autoCorrect={false}
               />
 
               <Text style={styles.label}>Пароль</Text>

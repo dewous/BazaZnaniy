@@ -19,7 +19,7 @@ interface User {
   first_name: string;
   last_name: string;
   email: string;
-  group: string;
+  group_name: string;
   role: 'STUDENT' | 'TEACHER' | 'ADMIN';
 }
 
@@ -32,7 +32,7 @@ export default function AdminUsersPanel() {
   const fetchUsers = async () => {
     console.log('[AdminUsersPanel] Загрузка списка пользователей...');
     try {
-      const res = await axios.get('http://baze36.ru:3000/auth', {
+      const res = await axios.get('http://baze36.ru:3000/auth/', {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('[AdminUsersPanel] Пользователи загружены:', res.data);
@@ -79,18 +79,23 @@ export default function AdminUsersPanel() {
           <Text style={styles.userName}>
             id: {item.id}: {item.first_name} {item.last_name}
           </Text>
-          <Text style={styles.userEmail}>{item.email}</Text>
-          <Text style={styles.userGroup}>{item.group}</Text>
-          <Text style={styles.userEmail}>{item.role}</Text>
+          <Text style={styles.userEmail}>e-mail: {item.email}</Text>
+          <Text style={styles.userGroup}>Группа: {item.group_name}</Text>
+          <Text style={styles.userEmail}>Роль: {item.role}</Text>
         </View>
 
         <View style={styles.iconButtons}>
           <TouchableOpacity
             onPress={() => {
-              console.log(`[AdminUsersPanel] Переход к редактированию пользователя ${item.id}`);
+              console.log(`[AdminUsersPanel] Переход к редактированию пользователя ${item.id} с группой ${item.group_name}`);
               router.push({
                 pathname: '/admin/user-administration/edit-user',
-                params: { id: item.id },
+                params: {     id: item.id,
+                              first_name: item.first_name,
+                              last_name: item.last_name,
+                              email: item.email,
+                              group: item.group_name,
+                              role: item.role, },
               });
             }}
             style={styles.editButton}

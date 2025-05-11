@@ -136,6 +136,7 @@ export default function Register() {
                 onChangeText={setSurname}
                 autoCapitalize="words"
                 placeholderTextColor="#999"
+                autoCorrect={false}
               />
 
               <TextInput
@@ -145,6 +146,7 @@ export default function Register() {
                 onChangeText={setGroup}
                 placeholderTextColor="#999"
                 autoCapitalize="characters"
+                autoCorrect={false}
               />
 
               <TextInput
@@ -156,6 +158,7 @@ export default function Register() {
                 autoCapitalize="none"
                 placeholderTextColor="#999"
                 textContentType="emailAddress"
+                autoCorrect={false}
               />
 
               <TextInput
