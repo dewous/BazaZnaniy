@@ -27,35 +27,35 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: 'center', 
     padding: 24,
-    backgroundColor: '#F7F9FC',  // Светлый фон для контраста
+    backgroundColor: '#F7F9FC',  
   },
   title: { 
     fontSize: 24, 
     fontWeight: 'bold', 
     marginBottom: 24, 
     textAlign: 'center',
-    color: '#333',  // Более темный цвет текста для лучшего контраста
+    color: '#333',  
   },
   button: {
-    backgroundColor: '#3D76F7',  // Контрастный синий цвет
+    backgroundColor: '#3D76F7',  
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 16,
     marginBottom: 16,
-    shadowColor: '#000',  // Тень для выделения кнопки
+    shadowColor: '#000',  
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.5,
-    elevation: 5,  // Подсветка для Android
+    elevation: 5, 
   },
   buttonText: { 
     color: 'white', 
     fontSize: 16, 
     textAlign: 'center',
-    fontWeight: '600',  // Сделать текст жирным для лучшей читаемости
+    fontWeight: '600',  
   },
   backButton: {
-    backgroundColor: '#FF4D4D',  // Яркий красный для "Назад"
+    backgroundColor: '#FF4D4D', 
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 16,
